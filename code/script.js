@@ -62,10 +62,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     buttonUrls = buttonUrls.map(u => forceHttps(u));
 
     let imageGridUrls = imgRes || [];
-    if (imageGridUrls.length === 0) {
-        if (condition === 5) imageGridUrls = ["https://dmexpertsaim.github.io/video/yt/image/bounce.jpg", "https://dmexpertsaim.github.io/video/yt/image/maxresdefault.jpg"];
-        else if (condition === 6) imageGridUrls = ["https://dmexpertsaim.github.io/video/yt/image/maxresdefault.jpg", "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjsRL0OU7JCI11poU0xm2GJ4f7GfTVj0qXejZq7w_pd4xIwY4o3_-vUT_AaVjCgSvxWTf0fburVRZw4hMa8XGsPCsGlgZ-zcCgukG8pD-MIVqQYPViOpuANiEzTAfq86eo3wfEgbTajiaL3WUjTE7qCmgY8uy9JotAMFNnakAbAE5GdjUKRZ9izEqcrUus7/s1600/1000296520.jpg"];
-    }
     imageGridUrls = imageGridUrls.map(u => forceHttps(u));
 
     const configs = {
