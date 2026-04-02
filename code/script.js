@@ -226,9 +226,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                     img.onload();
                 }
                 
+                const titleEl = document.createElement('div');
+                titleEl.className = 'grid-item-title';
+                titleEl.textContent = (condition === 5) ? `Bonus ${idx + 1}` : `Viral Video ${idx + 1}`;
+                
                 wrap.appendChild(skeleton);
                 wrap.appendChild(img);
                 wrap.appendChild(playIcon);
+                wrap.appendChild(titleEl);
                 gridContainer.appendChild(wrap);
             });
         }
