@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const conf = configs[condition];
 
-    document.getElementById('favicon').href = forceHttps(conf.logo);
+    document.getElementById('favicon').href = forceHttps(conf.favicon || conf.logo);
     const logoImg = document.getElementById('site-logo');
     logoImg.src = forceHttps(conf.logo);
     logoImg.onerror = () => logoImg.style.opacity = '0'; // Hide logo if it fails
