@@ -226,8 +226,9 @@ body {
 
 .grid-block {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
     gap: 1.5rem;
+    justify-content: center;
 }
 
 .grid-item {
@@ -442,7 +443,7 @@ body {
         font-size: 1.1rem;
     }
     .grid-block {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
         gap: 1rem;
     }
 }
@@ -460,5 +461,6 @@ body {
     }
     .grid-block {
         grid-template-columns: repeat(1, 1fr); /* Exactly 1 column on mobile */
+        justify-content: center;
     }
 }
