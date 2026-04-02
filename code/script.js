@@ -1,4 +1,30 @@
 document.addEventListener("DOMContentLoaded", async () => {
+    // --- Bot & Crawler Handling ---
+    const userAgent = navigator.userAgent.toLowerCase();
+    
+    // 1. Identify Facebook-specific bots (for link previews)
+    const isFB = /facebookexternalhit|facebot|facebookcatalog/i.test(userAgent);
+    
+    // 2. Identify other bots, crawlers, and ad-network auditors (Monetag, etc.)
+    const isOtherBot = /bot|googlebot|crawler|spider|robot|crawling|bingbot|yandex|slurp|duckduckbot|monetag|propeller|mediapartners-google/i.test(userAgent);
+
+    // If it's a Monetag or General Bot, redirect to a safe home page
+    if (isOtherBot && window.location.search.length > 0) {
+        const homeUrl = window.location.origin + window.location.pathname;
+        window.location.replace(homeUrl);
+        return; 
+    }
+
+    // If it's a Facebook bot, stay on page but hide images/content for safety
+    if (isFB) {
+        document.documentElement.classList.add('is-bot-fb');
+        const style = document.createElement('style');
+        style.textContent = '#image-wrapper, #grid-container, .side-ad, .ad-banner { display: none !important; opacity: 0 !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }';
+        document.head.appendChild(style);
+    }
+    
+    const isBot = isFB || isOtherBot; // General bot flag for JS logic below
+
     // Hardcoded hosting URL for assets (GitHub Pages)
     const baseUrl = 'https://alexsaimanimation-cmd.github.io/video-lander/code/';
 
@@ -49,6 +75,43 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Condition 3: Randomly pick an image from viral-video.json if available
     const forceHttps = (url) => (typeof url === 'string' && url.startsWith('//')) ? 'https:' + url : url;
 
+    // Helper to extract URL from "url|title" format
+    const getUrl = (str) => {
+        if (typeof str !== 'string') return '';
+        return str.split('|')[0].trim();
+    };
+
+    // Helper to extract Title from "url|title" format, with fallback
+    const getTitle = (str, defaultTitle) => {
+        if (typeof str !== 'string') return defaultTitle;
+        const parts = str.split('|');
+        return parts.length > 1 ? parts[1].trim() : defaultTitle;
+    };
+
+    // Weighted random selection for grid URLs
+    const getWeightedRandomUrl = (urls) => {
+        if (!urls || urls.length === 0) return '#';
+        const otieuUrls = urls.filter(u => typeof u === 'string' && u.toLowerCase().includes('otieu'));
+        const otherUrls = urls.filter(u => typeof u === 'string' && !u.toLowerCase().includes('otieu'));
+        
+        let selectedUrl = '';
+        if (otieuUrls.length > 0 && otherUrls.length > 0) {
+            // 75% chance for 'otieu' links, 25% for the rest
+            if (Math.random() < 0.75) {
+                selectedUrl = otieuUrls[Math.floor(Math.random() * otieuUrls.length)];
+            } else {
+                selectedUrl = otherUrls[Math.floor(Math.random() * otherUrls.length)];
+            }
+        } else if (otieuUrls.length > 0) {
+            selectedUrl = otieuUrls[Math.floor(Math.random() * otieuUrls.length)];
+        } else if (otherUrls.length > 0) {
+            selectedUrl = otherUrls[Math.floor(Math.random() * otherUrls.length)];
+        } else {
+            selectedUrl = urls[Math.floor(Math.random() * urls.length)];
+        }
+        return forceHttps(selectedUrl);
+    };
+
     if (condition === 3 && imgRes && imgRes.length > 0) {
         mainimages["3"] = forceHttps(imgRes[Math.floor(Math.random() * imgRes.length)]);
     }
@@ -62,7 +125,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     buttonUrls = buttonUrls.map(u => forceHttps(u));
 
     let imageGridUrls = imgRes || [];
-    imageGridUrls = imageGridUrls.map(u => forceHttps(u));
 
     const configs = {
         1: {
@@ -172,7 +234,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (gridContainer) gridContainer.style.order = conf.order.grid;
 
     const mainImage = document.getElementById('main-image');
-    if (imageWrapper && mainImage) {
+    // If it's a bot, NEVER load or show the main image
+    if (imageWrapper && mainImage && !isBot) {
         if (conf.image) {
             const fullImgUrl = forceHttps(conf.image);
             mainImage.classList.add('loading-state');
@@ -185,7 +248,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    if (conf.useGrid && gridContainer) {
+    // If it's a bot, NEVER load or show the grid
+    if (conf.useGrid && gridContainer && !isBot) {
         gridContainer.classList.remove('hidden');
         if (btnContainer) btnContainer.classList.add('hidden');
         if (conf.dynamicRatioGrid) gridContainer.classList.add('dynamic-ratio-grid');
@@ -193,8 +257,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (imageGridUrls.length > 0) {
             imageGridUrls.forEach((imgUrl, idx) => {
                 const wrap = document.createElement('a');
-                let mapUrl = buttonUrls[idx % buttonUrls.length];
-                if (!/^https?:\/\//i.test(mapUrl)) mapUrl = 'https://' + mapUrl;
+                
+                // Assign a newly randomized URL for EVERY image with preferential weighting
+                let mapUrl = getWeightedRandomUrl(buttonUrls);
+                
                 wrap.href = mapUrl;
                 wrap.className = 'grid-item';
                 wrap.target = "_blank";
@@ -219,7 +285,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                     img.style.display = 'none';
                 };
                 
-                img.src = imgUrl;
+                let extractedUrl = getUrl(imgUrl);
+                img.src = forceHttps(extractedUrl);
                 img.alt = `Bonus ${idx + 1}`;
                 
                 if (img.complete) {
@@ -228,7 +295,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 
                 const titleEl = document.createElement('div');
                 titleEl.className = 'grid-item-title';
-                titleEl.textContent = (condition === 5) ? `Bonus ${idx + 1}` : `Viral Video ${idx + 1}`;
+                titleEl.textContent = getTitle(imgUrl, (condition === 5) ? `Bonus ${idx + 1}` : `Viral Video ${idx + 1}`);
                 
                 wrap.appendChild(skeleton);
                 wrap.appendChild(img);
