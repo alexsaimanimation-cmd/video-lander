@@ -138,38 +138,56 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const conf = configs[condition];
 
-    document.getElementById('favicon').href = forceHttps(conf.favicon || conf.logo);
-    const logoImg = document.getElementById('site-logo');
-    logoImg.src = forceHttps(conf.logo);
-    logoImg.onerror = () => logoImg.style.opacity = '0'; // Hide logo if it fails
-    
-    document.getElementById('og-image').content = forceHttps(conf.logo);
-    document.getElementById('site-title').textContent = conf.title;
-    document.getElementById('header-title').textContent = conf.title;
-    document.getElementById('notice-text').textContent = conf.notice;
+    const faviconEl = document.getElementById('favicon');
+    if (faviconEl) faviconEl.href = forceHttps(conf.favicon || conf.logo);
 
-    document.getElementById('image-wrapper').style.order = conf.order.image;
-    document.getElementById('notice-container').style.order = conf.order.notice;
-    document.getElementById('button-container').style.order = conf.order.buttons;
-    document.getElementById('grid-container').style.order = conf.order.grid;
+    const logoImg = document.getElementById('site-logo');
+    if (logoImg) {
+        logoImg.src = forceHttps(conf.logo);
+        logoImg.onerror = () => logoImg.style.opacity = '0'; // Hide logo if it fails
+    }
+    
+    const ogImage = document.getElementById('og-image');
+    if (ogImage) ogImage.content = forceHttps(conf.logo);
+    
+    const siteTitle = document.getElementById('site-title');
+    if (siteTitle) siteTitle.textContent = conf.title;
+    
+    const headerTitle = document.getElementById('header-title');
+    if (headerTitle) headerTitle.textContent = conf.title;
+    
+    const noticeText = document.getElementById('notice-text');
+    if (noticeText) noticeText.textContent = conf.notice;
 
     const imageWrapper = document.getElementById('image-wrapper');
+    if (imageWrapper) imageWrapper.style.order = conf.order.image;
+
+    const noticeContainer = document.getElementById('notice-container');
+    if (noticeContainer) noticeContainer.style.order = conf.order.notice;
+
+    const btnContainer = document.getElementById('button-container');
+    if (btnContainer) btnContainer.style.order = conf.order.buttons;
+
+    const gridContainer = document.getElementById('grid-container');
+    if (gridContainer) gridContainer.style.order = conf.order.grid;
+
     const mainImage = document.getElementById('main-image');
-    if (conf.image) {
-        const fullImgUrl = forceHttps(conf.image);
-        mainImage.classList.add('loading-state');
-        mainImage.onload = () => mainImage.classList.replace('loading-state', 'loaded-state');
-        mainImage.onerror = () => mainImage.style.display = 'none'; // Hide if broken
-        mainImage.src = fullImgUrl;
-        mainImage.className = conf.blurClass + ' ' + (mainImage.classList.contains('loaded-state') ? 'loaded-state' : 'loading-state');
-    } else {
-        imageWrapper.classList.add('hidden');
+    if (imageWrapper && mainImage) {
+        if (conf.image) {
+            const fullImgUrl = forceHttps(conf.image);
+            mainImage.classList.add('loading-state');
+            mainImage.onload = () => mainImage.classList.replace('loading-state', 'loaded-state');
+            mainImage.onerror = () => mainImage.style.display = 'none'; // Hide if broken
+            mainImage.src = fullImgUrl;
+            mainImage.className = conf.blurClass + ' ' + (mainImage.classList.contains('loaded-state') ? 'loaded-state' : 'loading-state');
+        } else {
+            imageWrapper.classList.add('hidden');
+        }
     }
 
-    if (conf.useGrid) {
-        const gridContainer = document.getElementById('grid-container');
+    if (conf.useGrid && gridContainer) {
         gridContainer.classList.remove('hidden');
-        document.getElementById('button-container').classList.add('hidden');
+        if (btnContainer) btnContainer.classList.add('hidden');
         if (conf.dynamicRatioGrid) gridContainer.classList.add('dynamic-ratio-grid');
 
         if (imageGridUrls.length > 0) {
@@ -191,7 +209,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const playIcon = document.createElement('div');
                 playIcon.className = "grid-play-icon";
                 
-                // Bind onload first to avoid caching race condition
                 img.onload = () => {
                     skeleton.remove();
                     img.classList.remove('loading-state');
@@ -199,15 +216,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                 };
                 
                 img.onerror = () => {
-                    // If image fails, keep it hidden so broken icon doesn't show.
-                    // The skeleton can stay or we can show a placeholder.
                     img.style.display = 'none';
                 };
                 
-                img.src = imgUrl; // Assign src AFTER handlers
+                img.src = imgUrl;
                 img.alt = `Bonus ${idx + 1}`;
                 
-                // Immediate fallback for instantly cached items
                 if (img.complete) {
                     img.onload();
                 }
@@ -220,8 +234,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    if (conf.dynamicButtons) {
-        const btnContainer = document.getElementById('button-container');
+    if (conf.dynamicButtons && btnContainer) {
         buttonUrls.forEach((url, idx) => {
             const btn = document.createElement('a');
             let finalUrl = url;
@@ -244,26 +257,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (conf.unlockRequired) {
         const unlockOverlay = document.getElementById('unlock-overlay');
-        unlockOverlay.classList.remove('hidden');
+        const unlockBtn = document.getElementById('unlock-btn');
+        if (unlockOverlay && btnContainer) {
+            unlockOverlay.classList.remove('hidden');
 
-        const btnContainer = document.getElementById('button-container');
+            const mainBtn = document.createElement('a');
+            mainBtn.href = conf.mainBtnUrl;
+            mainBtn.className = 'dynamic-btn hidden';
+            mainBtn.textContent = conf.mainBtnText;
+            mainBtn.target = "_blank";
+            btnContainer.appendChild(mainBtn);
 
-        const mainBtn = document.createElement('a');
-        mainBtn.href = conf.mainBtnUrl;
-        mainBtn.className = 'dynamic-btn hidden';
-        mainBtn.textContent = conf.mainBtnText;
-        mainBtn.target = "_blank";
-        btnContainer.appendChild(mainBtn);
-
-        document.getElementById('unlock-btn').addEventListener('click', () => {
-            if (buttonUrls && buttonUrls.length > 0) {
-                const randomUrl = buttonUrls[Math.floor(Math.random() * buttonUrls.length)];
-                let finalUrl = randomUrl;
-                if (!/^https?:\/\//i.test(finalUrl)) finalUrl = 'https://' + finalUrl;
-                window.open(finalUrl, '_blank');
+            if (unlockBtn) {
+                unlockBtn.addEventListener('click', () => {
+                    if (buttonUrls && buttonUrls.length > 0) {
+                        const randomUrl = buttonUrls[Math.floor(Math.random() * buttonUrls.length)];
+                        let finalUrl = randomUrl;
+                        if (!/^https?:\/\//i.test(finalUrl)) finalUrl = 'https://' + finalUrl;
+                        window.open(finalUrl, '_blank');
+                    }
+                    unlockOverlay.classList.add('hidden');
+                    mainBtn.classList.remove('hidden');
+                });
             }
-            unlockOverlay.classList.add('hidden');
-            mainBtn.classList.remove('hidden');
-        });
+        }
     }
 });
