@@ -56,9 +56,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const defaultLogos = { 1: "https://dmexpertsaim.github.io/video/yt/image/youtube-player-icon.png", 2: "https://dmexpertsaim.github.io/video/yt/image/youtube-logo.png", 3: "https://dmexpertsaim.github.io/video/yt/image/viral-link-logo.jpg", 4: "https://dmexpertsaim.github.io/video/yt/image/bounce-logo.png", 5: "https://dmexpertsaim.github.io/video/yt/image/bounce-logo.png", 6: "https://dmexpertsaim.github.io/video/yt/image/viral-link-logo.jpg" };
 
-    // Run ALL 8 JSON fetch requests in parallel for maximum speed
+    // Run ALL 9 JSON fetch requests in parallel for maximum speed
     const [
-        btnRes, imgRes, titles, logos, favicons, notices, mainimages, buttonTexts
+        btnRes, imgRes, titles, logos, favicons, notices, mainimages, buttonTexts, adsConfig
     ] = await Promise.all([
         fetch(baseUrl + 'buttonurl.json').then(r => r.ok ? r.json() : null).catch(() => null),
         (condition === 5) ? fetch(baseUrl + 'gridviews.json').then(r => r.ok ? r.json() : null).catch(() => null)
@@ -69,7 +69,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         loadJsonFallback('favicon.json', defaultLogos),
         loadJsonFallback('notice.json', { 1: "এই ভিডিওটি দেখার জন্য আপনাকে কয়েক সেকেন্ড অপেক্ষা করতে হতে পারে।", 2: "এই সম্পূর্ণ ভিডিও দেখতে নিচের বাটনে ক্লিক করুন। বিঃদ্রঃ যদি একটি বাটনে কাজ না করে তাহলে অন্য বাটন দিয়ে চেষ্টা করুন।", 3: "এর নতুন ভাইরাল ভিডিও মিস করতে না চাইলে নিচের লিংক বা বাটন থেকে দেখে আসুন। বিঃদ্রঃ যদি একটি বাটনে কাজ না করে তাহলে অন্য বাটনে চেষ্টা করুন।", 4: "এই বোনাস মিস করতে না চাইলে নিচের লিংক বা বাটনে ক্লিক করে অ্যাকাউন্ট খুলুন। যদি বোনাস না পান তাহলে অন্য বাটনে চেষ্টা করুন।", 5: "এই বোনাসগুলোর সময় মিস করতে না চাইলে ইমেজে ক্লিক করে অ্যাকাউন্ট খুলুন। বিঃদ্রঃ যদি বোনাস না পান তাহলে অন্য বোনাস নেওয়ার চেষ্টা করুন।", 6: "এই নতুন ভাইরাল ইমেজের যেকোনো একটি মিস করতে না চাইলে ইমেজে ক্লিক করে দেখে আসুন। বিঃদ্রঃ যদি একটি কাজ না করে তাহলে অন্যটিতে চেষ্টা করুন।" }),
         loadJsonFallback('mainimage.json', { 1: "https://dmexpertsaim.github.io/video/yt/image/maxresdefault.jpg", 2: "https://dmexpertsaim.github.io/video/yt/image/maxresdefault.jpg", 3: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjsRL0OU7JCI11poU0xm2GJ4f7GfTVj0qXejZq7w_pd4xIwY4o3_-vUT_AaVjCgSvxWTf0fburVRZw4hMa8XGsPCsGlgZ-zcCgukG8pD-MIVqQYPViOpuANiEzTAfq86eo3wfEgbTajiaL3WUjTE7qCmgY8uy9JotAMFNnakAbAE5GdjUKRZ9izEqcrUus7/s1600/1000296520.jpg", 4: "https://dmexpertsaim.github.io/video/yt/image/bounce.jpg", 5: null, 6: null }),
-        loadJsonFallback('buttontext.json', { 1: "Watch Full Video", 2: "Watch Now", 3: ["watch Now", "লিংক ডিলিট হওয়ার আগে দেখুন", "এখনো দেখে আসুন", "Watch Now"], 4: ["Join Now", "Get Bounce", "Signup"], 5: null, 6: null })
+        loadJsonFallback('buttontext.json', { 1: "Watch Full Video", 2: "Watch Now", 3: ["watch Now", "লিংক ডিলিট হওয়ার আগে দেখুন", "এখনো দেখে আসুন", "Watch Now"], 4: ["Join Now", "Get Bounce", "Signup"], 5: null, 6: null }),
+        loadJsonFallback('adsconfig.json', { top_ad_desktop_728: true, top_ad_tablet_468: false, top_ad_mobile_320: false, bottom_ad_300: false, left_sidebar_160: false, right_sidebar_native: true })
     ]);
 
     // Condition 3: Randomly pick an image from viral-video.json if available
@@ -211,13 +212,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     const ogImage = document.getElementById('og-image');
     if (ogImage) ogImage.content = forceHttps(conf.logo);
-    
+
     const siteTitle = document.getElementById('site-title');
     if (siteTitle) siteTitle.textContent = conf.title;
-    
+
     const headerTitle = document.getElementById('header-title');
     if (headerTitle) headerTitle.textContent = conf.title;
-    
+
     const noticeText = document.getElementById('notice-text');
     if (noticeText) noticeText.textContent = conf.notice;
 
@@ -234,16 +235,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (gridContainer) gridContainer.style.order = conf.order.grid;
 
     const mainImage = document.getElementById('main-image');
+    
     // If it's a bot, NEVER load or show the main image
     if (imageWrapper && mainImage && !isBot) {
         if (conf.image) {
             const fullImgUrl = forceHttps(conf.image);
-            mainImage.classList.add('loading-state');
-            mainImage.onload = () => mainImage.classList.replace('loading-state', 'loaded-state');
-            mainImage.onerror = () => mainImage.style.display = 'none'; // Hide if broken
-            mainImage.src = fullImgUrl;
-            mainImage.className = conf.blurClass + ' ' + (mainImage.classList.contains('loaded-state') ? 'loaded-state' : 'loading-state');
-        } else {
+        mainImage.classList.add('loading-state');
+        mainImage.onload = () => mainImage.classList.replace('loading-state', 'loaded-state');
+        mainImage.onerror = () => mainImage.style.display = 'none'; // Hide if broken
+        mainImage.src = fullImgUrl;
+        mainImage.className = conf.blurClass + ' ' + (mainImage.classList.contains('loaded-state') ? 'loaded-state' : 'loading-state');
+    } else {
             imageWrapper.classList.add('hidden');
         }
     }
@@ -275,6 +277,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const playIcon = document.createElement('div');
                 playIcon.className = "grid-play-icon";
                 
+                // Bind onload first to avoid caching race condition
                 img.onload = () => {
                     skeleton.remove();
                     img.classList.remove('loading-state');
@@ -282,13 +285,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                 };
                 
                 img.onerror = () => {
+                    // If image fails, keep it hidden so broken icon doesn't show.
+                    // The skeleton can stay or we can show a placeholder.
                     img.style.display = 'none';
                 };
                 
                 let extractedUrl = getUrl(imgUrl);
-                img.src = forceHttps(extractedUrl);
+                img.src = forceHttps(extractedUrl); // Assign src AFTER handlers
                 img.alt = `Bonus ${idx + 1}`;
                 
+                // Immediate fallback for instantly cached items
                 if (img.complete) {
                     img.onload();
                 }
@@ -330,6 +336,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (conf.unlockRequired) {
         const unlockOverlay = document.getElementById('unlock-overlay');
         const unlockBtn = document.getElementById('unlock-btn');
+
         if (unlockOverlay && btnContainer) {
             unlockOverlay.classList.remove('hidden');
 
@@ -351,6 +358,41 @@ document.addEventListener("DOMContentLoaded", async () => {
                     unlockOverlay.classList.add('hidden');
                     mainBtn.classList.remove('hidden');
                 });
+            }
+        }
+    }
+
+    // Dynamic Ads Control
+    if (adsConfig) {
+        const adMappings = [
+            { key: 'top_ad_desktop_728', selector: '.desktop-ad-container' },
+            { key: 'top_ad_tablet_468', selector: '.tablet-ad-container' },
+            { key: 'top_ad_mobile_320', selector: '.mobile-ad-container' },
+            { key: 'bottom_ad_300', selector: '.bottom-ad' },
+            { key: 'left_sidebar_160', selector: '.left-ad' },
+            { key: 'right_sidebar_native', selector: '.right-ad' }
+        ];
+
+        adMappings.forEach(ad => {
+            if (adsConfig[ad.key] === false) {
+                const el = document.querySelector(ad.selector);
+                if (el) {
+                    el.innerHTML = '';
+                    el.style.display = 'none';
+                    el.style.height = '0';
+                    el.style.padding = '0';
+                    el.style.visibility = 'hidden';
+                }
+            }
+        });
+
+        // Hide full container if all 3 top-ads are disabled
+        if (adsConfig.top_ad_desktop_728 === false && adsConfig.top_ad_tablet_468 === false && adsConfig.top_ad_mobile_320 === false) {
+            const topAd = document.querySelector('.top-ad');
+            if (topAd) {
+                topAd.style.display = 'none';
+                topAd.style.height = '0';
+                topAd.style.padding = '0';
             }
         }
     }
