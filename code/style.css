@@ -89,7 +89,6 @@ body {
     padding: 0 20px;
 }
 
-/* ADS STYLES - COMMENTED OUT
 .side-ad {
     width: 250px;
     flex-shrink: 0;
@@ -104,7 +103,6 @@ body {
     position: sticky;
     top: 100px;
 }
-*/
 
 .main-container {
     flex-grow: 1;
@@ -115,7 +113,6 @@ body {
     gap: 1.5rem;
 }
 
-/* ADS STYLES - COMMENTED OUT
 .ad-banner {
     width: 100%;
     background: rgba(0, 0, 0, 0.4);
@@ -129,7 +126,6 @@ body {
 }
 .top-ad { height: 90px; }
 .bottom-ad { height: 250px; }
-*/
 
 .dynamic-content-section {
     display: flex;
@@ -230,9 +226,8 @@ body {
 
 .grid-block {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
-    justify-content: center;
 }
 
 .grid-item {
@@ -244,8 +239,7 @@ body {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     border: 1px solid var(--glass-border);
-    display: flex;
-    flex-direction: column;
+    display: block;
     position: relative;
 }
 .grid-item:hover {
@@ -276,13 +270,14 @@ body {
     position: relative;
     z-index: 1;
     transition: opacity 0.4s ease;
+    /* Hide broken image icon/text */
     text-indent: -10000px;
     background: transparent;
-    opacity: 0.6;
+    opacity: 0.6; /* Default Lower Opacity for Grid Images */
 }
 
 .grid-item:hover > img {
-    opacity: 1;
+    opacity: 1; /* Show full image on hover */
 }
 
 #main-image {
@@ -291,6 +286,7 @@ body {
     object-fit: cover;
     transition: filter 0.5s ease, opacity 0.4s ease;
     display: block;
+    /* Hide broken image icon/text */
     text-indent: -10000px;
     background: transparent;
 }
@@ -304,7 +300,7 @@ body {
 }
 
 .grid-item > img.loaded-state {
-    opacity: 0.6 !important;
+    opacity: 0.6 !important; /* Dimmed state for grid items only */
 }
 
 .grid-item:hover > img.loaded-state {
@@ -318,11 +314,11 @@ body {
     transform: translate(-50%, -50%);
     width: 60px;
     height: 60px;
-    z-index: 100;
+    z-index: 100; /* Higher priority */
     pointer-events: none;
     transition: transform 0.3s ease, opacity 0.3s ease;
     filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5));
-    opacity: 1;
+    opacity: 1; /* More visible */
     background-image: url('https://dmexpertsaim.github.io/video/yt/image/play.png');
     background-size: contain;
     background-position: center;
@@ -336,29 +332,13 @@ body {
 }
 
 .dynamic-ratio-grid {
-    align-items: stretch;
+    align-items: start;
 }
 
 .dynamic-ratio-grid .grid-item {
-    aspect-ratio: 4/5;
-    height: auto;
-}
-
-.grid-item-title {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.75);
-    color: #fff;
-    padding: 10px 5px;
-    text-align: center;
-    font-size: 1.1rem;
-    font-weight: 600;
-    z-index: 10;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    border-top: 1px solid rgba(255,255,255,0.1);
+    aspect-ratio: auto;
+    height: max-content;
+    min-height: 150px;
 }
 
 .dynamic-ratio-grid .grid-item img {
@@ -374,7 +354,7 @@ body {
     animation: pulse 2s infinite;
 }
 
-/* ADS RESPONSIVE STYLES - COMMENTED OUT
+/* --- Media Queries for Responsive Ads --- */
 @media screen and (min-width: 769px) {
     .tablet-ad-container, .mobile-ad-container { display: none !important; }
 }
@@ -386,36 +366,31 @@ body {
 @media screen and (max-width: 480px) {
     .desktop-ad-container, .tablet-ad-container { display: none !important; }
 }
-*/
 
-/* Media Queries for Responsiveness */
+/* --- Media Queries for Responsiveness --- */
 
-/* Laptops & smaller screens */
+/* Laptops & smaller screens (where 3 columns won't fit well) */
 @media screen and (max-width: 1150px) {
     .page-wrapper {
         flex-direction: column;
         align-items: center;
         padding: 0 10px;
     }
-    /* ADS STYLES - COMMENTED OUT
     .side-ad {
         width: 100%;
         max-width: 800px;
         min-height: 250px;
         position: static;
     }
-    */
     .main-container {
         order: 1;
     }
-    /* ADS STYLES - COMMENTED OUT
     .left-ad {
-        order: 2;
+        order: 2; /* Moves below main content */
     }
     .right-ad {
-        order: 3;
+        order: 3; /* Moves below left ad */
     }
-    */
 }
 
 /* Tablet & Smaller Devices */
@@ -450,12 +425,12 @@ body {
         font-size: 1.1rem;
     }
     .grid-block {
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
     }
 }
 
-/* Mobile Phones */
+/* Mobile Phones (Very Small Devices) */
 @media screen and (max-width: 480px) {
     #header-title {
         font-size: 1.1rem;
@@ -467,7 +442,6 @@ body {
         gap: 1rem;
     }
     .grid-block {
-        grid-template-columns: repeat(1, 1fr);
-        justify-content: center;
+        grid-template-columns: repeat(1, 1fr); /* Exactly 1 column on mobile */
     }
 }
