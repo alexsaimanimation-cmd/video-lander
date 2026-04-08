@@ -345,14 +345,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (imageGridUrls.length > 0) {
             imageGridUrls.forEach((imgUrl, idx) => {
-                const wrap = document.createElement('a');
+                const wrap = document.createElement('div');
                 
                 // Assign a newly randomized URL for EVERY image with preferential weighting
                 let mapUrl = getWeightedRandomUrl(buttonUrls);
                 
-                wrap.href = mapUrl;
+                // Hide URL from status bar on hover
+                wrap.setAttribute('data-url', mapUrl);
                 wrap.className = 'grid-item';
-                wrap.target = "_blank";
+                wrap.style.cursor = 'pointer';
+                wrap.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.open(wrap.getAttribute('data-url'), '_blank');
+                });
 
                 const skeleton = document.createElement('div');
                 skeleton.className = 'skeleton-loader';
@@ -401,12 +406,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (conf.dynamicButtons && btnContainer) {
         buttonUrls.forEach((url, idx) => {
-            const btn = document.createElement('a');
+            const btn = document.createElement('div');
             let finalUrl = url;
             if (!/^https?:\/\//i.test(finalUrl)) finalUrl = 'https://' + finalUrl;
-            btn.href = finalUrl;
+            // Hide URL from status bar on hover
+            btn.setAttribute('data-url', finalUrl);
             btn.className = 'dynamic-btn';
-            btn.target = "_blank";
+            btn.style.cursor = 'pointer';
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.open(btn.getAttribute('data-url'), '_blank');
+            });
 
             let text = "Click Here";
             if (Array.isArray(conf.buttonTextPrefix)) {
@@ -427,11 +437,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (unlockOverlay && btnContainer) {
             unlockOverlay.classList.remove('hidden');
 
-            const mainBtn = document.createElement('a');
-            mainBtn.href = conf.mainBtnUrl;
+            const mainBtn = document.createElement('div');
+            // Hide URL from status bar on hover
+            mainBtn.setAttribute('data-url', conf.mainBtnUrl);
             mainBtn.className = 'dynamic-btn hidden';
             mainBtn.textContent = conf.mainBtnText;
-            mainBtn.target = "_blank";
+            mainBtn.style.cursor = 'pointer';
+            mainBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.open(mainBtn.getAttribute('data-url'), '_blank');
+            });
             btnContainer.appendChild(mainBtn);
 
             if (unlockBtn) {
@@ -450,4 +465,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // Note: Ad injection has already securely completed at the beginning of the script.
+
+    // Prevent Long-Click / Context Menu on Mobile devices to hide Link URLs
+    document.addEventListener('contextmenu', function(e) {
+        // Find if the target or its parent is an anchor tag or image
+        let target = e.target;
+        while (target != null) {
+            if (target.tagName === 'A' || target.tagName === 'IMG' || target.classList.contains('dynamic-btn')) {
+                e.preventDefault();
+                return false;
+            }
+            target = target.parentElement;
+        }
+    });
+
+    // Also prevent touchstart holding from selecting text or popping up tooltip in some Android versions
+    document.addEventListener('touchstart', function(e) {
+        let target = e.target;
+        while (target != null) {
+            if (target.tagName === 'A' || target.tagName === 'IMG') {
+                target.style.webkitTouchCallout = "none";
+                target.style.webkitUserSelect = "none";
+                target.style.userSelect = "none";
+            }
+            target = target.parentElement;
+        }
+    });
 });
