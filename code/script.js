@@ -57,8 +57,96 @@ document.addEventListener("DOMContentLoaded", async () => {
     const defaultLogos = { 1: "https://dmexpertsaim.github.io/video/yt/image/youtube-player-icon.png", 2: "https://dmexpertsaim.github.io/video/yt/image/youtube-logo.png", 3: "https://dmexpertsaim.github.io/video/yt/image/viral-link-logo.jpg", 4: "https://dmexpertsaim.github.io/video/yt/image/bounce-logo.png", 5: "https://dmexpertsaim.github.io/video/yt/image/bounce-logo.png", 6: "https://dmexpertsaim.github.io/video/yt/image/viral-link-logo.jpg" };
 
     // Run ALL 9 JSON fetch requests in parallel for maximum speed
+    // 1. Fetch adsconfig.json FIRST so disabled ads NEVER load or execute
+    const adsConfig = await loadJsonFallback('adsconfig.json', { top_ad_desktop_728: true, top_ad_tablet_468: true, top_ad_mobile_320: true, bottom_ad_300: true, left_sidebar_160: true, right_sidebar_native: true });
+
+    // 2. Load and Inject Ads safely and conditionally
+    const loadAd = async (adConfigKey, containerSelector, key, width, height) => {
+        const adContainer = document.querySelector(containerSelector);
+        if (!adContainer) return;
+
+        // Responsive Loading Prevention
+        let shouldLoadResponsive = true;
+        const w = window.innerWidth;
+        if (adConfigKey.includes('desktop') && w <= 768) shouldLoadResponsive = false;
+        if (adConfigKey.includes('tablet') && (w > 768 || w <= 480)) shouldLoadResponsive = false;
+        if (adConfigKey.includes('mobile') && w > 480) shouldLoadResponsive = false;
+
+        if (adsConfig[adConfigKey] !== false && shouldLoadResponsive && !isBot && !isFB) {
+            adContainer.style.display = 'block';
+            return new Promise(resolve => {
+                window.atOptions = { 'key': key, 'format': 'iframe', 'height': height, 'width': width, 'params': {} };
+                const script = document.createElement('script');
+                script.src = `https://sensibleexterminatorprivate.com/${key}/invoke.js`;
+                script.onload = resolve;
+                script.onerror = resolve; // Continue even on failure
+                adContainer.appendChild(script);
+            });
+        } else {
+            Object.assign(adContainer.style, {display: 'none', height: '0', padding: '0'});
+            // Hide the wrapper banner (.top-ad / .bottom-ad) if everything inside is hidden
+            if (adContainer.parentElement && adContainer.parentElement.classList.contains('ad-banner')) {
+                const siblings = Array.from(adContainer.parentElement.children).filter(el => el.classList.contains('ad-content'));
+                if (siblings.length > 0 && siblings.every(el => el.style.display === 'none')) {
+                    Object.assign(adContainer.parentElement.style, {display: 'none', height: '0', padding: '0', margin: '0'});
+                }
+            }
+            // Hide side-ad wrappers if their ad is disabled
+            if (adContainer.parentElement && adContainer.parentElement.classList.contains('side-ad')) {
+                Object.assign(adContainer.parentElement.style, {display: 'none', height: '0', minHeight: '0', padding: '0', margin: '0'});
+            }
+        }
+    };
+
+    // Sequential injection prevents atOptions race condition
+    if (!isBot && !isFB) {
+        await loadAd('top_ad_desktop_728', '.desktop-ad-container', '32df16645009ae6e7542481a13922c70', 728, 90);
+        await loadAd('top_ad_tablet_468', '.tablet-ad-container', 'f14d84a6f9f81ca06406470ea63adf5e', 468, 60);
+        await loadAd('top_ad_mobile_320', '.mobile-ad-container', 'a1568e6a0900b0b25a075da15ec0ca28', 320, 50);
+        await loadAd('bottom_ad_300', '.bottom-ad .ad-content', 'c8aa3608fdf3406e4c9d6511f850ffbf', 300, 250);
+        await loadAd('left_sidebar_160', '.left-ad .ad-content', 'ec5ad61b46c8865ec2d57f3676130f1c', 160, 600);
+
+        // Native Ad special injection with Mobile reordering
+        const rightAd = document.querySelector('.right-ad');
+        if (adsConfig['right_sidebar_native'] !== false) {
+            if (rightAd) {
+                // If Mobile, physically move the ad exactly below EVERYTHING
+                if (window.innerWidth <= 1150) {
+                    const pageWrapper = document.querySelector('.page-wrapper');
+                    if (pageWrapper) {
+                        pageWrapper.appendChild(rightAd);
+                        rightAd.style.width = '100%';
+                        rightAd.style.maxWidth = '100%';
+                        rightAd.style.minHeight = 'auto';
+                        rightAd.style.marginTop = '20px';
+                        rightAd.style.marginBottom = '20px';
+                        rightAd.style.display = 'block';
+                    }
+                }
+                
+                const adContent = rightAd.querySelector('.ad-content') || rightAd;
+                adContent.innerHTML = '';
+                adContent.style.display = 'block';
+                
+                const s = document.createElement('script');
+                s.async = true;
+                s.dataset.cfasync = "false";
+                s.src = "https://sensibleexterminatorprivate.com/1a9dc68cee3b6faddc34c3bbc72336e8/invoke.js";
+                
+                const div = document.createElement('div');
+                div.id = "container-1a9dc68cee3b6faddc34c3bbc72336e8";
+                
+                adContent.appendChild(s);
+                adContent.appendChild(div);
+            }
+        } else {
+            if (rightAd) Object.assign(rightAd.style, {display: 'none', height: '0', padding: '0'});
+        }
+    }
+
+    // 3. Fetch all other configs
     const [
-        btnRes, imgRes, titles, logos, favicons, notices, mainimages, buttonTexts, adsConfig
+        btnRes, imgRes, titles, logos, favicons, notices, mainimages, buttonTexts
     ] = await Promise.all([
         fetch(baseUrl + 'buttonurl.json').then(r => r.ok ? r.json() : null).catch(() => null),
         (condition === 5) ? fetch(baseUrl + 'gridviews.json').then(r => r.ok ? r.json() : null).catch(() => null)
@@ -69,8 +157,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         loadJsonFallback('favicon.json', defaultLogos),
         loadJsonFallback('notice.json', { 1: "এই ভিডিওটি দেখার জন্য আপনাকে কয়েক সেকেন্ড অপেক্ষা করতে হতে পারে।", 2: "এই সম্পূর্ণ ভিডিও দেখতে নিচের বাটনে ক্লিক করুন। বিঃদ্রঃ যদি একটি বাটনে কাজ না করে তাহলে অন্য বাটন দিয়ে চেষ্টা করুন।", 3: "এর নতুন ভাইরাল ভিডিও মিস করতে না চাইলে নিচের লিংক বা বাটন থেকে দেখে আসুন। বিঃদ্রঃ যদি একটি বাটনে কাজ না করে তাহলে অন্য বাটনে চেষ্টা করুন।", 4: "এই বোনাস মিস করতে না চাইলে নিচের লিংক বা বাটনে ক্লিক করে অ্যাকাউন্ট খুলুন। যদি বোনাস না পান তাহলে অন্য বাটনে চেষ্টা করুন।", 5: "এই বোনাসগুলোর সময় মিস করতে না চাইলে ইমেজে ক্লিক করে অ্যাকাউন্ট খুলুন। বিঃদ্রঃ যদি বোনাস না পান তাহলে অন্য বোনাস নেওয়ার চেষ্টা করুন।", 6: "এই নতুন ভাইরাল ইমেজের যেকোনো একটি মিস করতে না চাইলে ইমেজে ক্লিক করে দেখে আসুন। বিঃদ্রঃ যদি একটি কাজ না করে তাহলে অন্যটিতে চেষ্টা করুন।" }),
         loadJsonFallback('mainimage.json', { 1: "https://dmexpertsaim.github.io/video/yt/image/maxresdefault.jpg", 2: "https://dmexpertsaim.github.io/video/yt/image/maxresdefault.jpg", 3: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjsRL0OU7JCI11poU0xm2GJ4f7GfTVj0qXejZq7w_pd4xIwY4o3_-vUT_AaVjCgSvxWTf0fburVRZw4hMa8XGsPCsGlgZ-zcCgukG8pD-MIVqQYPViOpuANiEzTAfq86eo3wfEgbTajiaL3WUjTE7qCmgY8uy9JotAMFNnakAbAE5GdjUKRZ9izEqcrUus7/s1600/1000296520.jpg", 4: "https://dmexpertsaim.github.io/video/yt/image/bounce.jpg", 5: null, 6: null }),
-        loadJsonFallback('buttontext.json', { 1: "Watch Full Video", 2: "Watch Now", 3: ["watch Now", "লিংক ডিলিট হওয়ার আগে দেখুন", "এখনো দেখে আসুন", "Watch Now"], 4: ["Join Now", "Get Bounce", "Signup"], 5: null, 6: null }),
-        loadJsonFallback('adsconfig.json', { top_ad_desktop_728: true, top_ad_tablet_468: false, top_ad_mobile_320: false, bottom_ad_300: false, left_sidebar_160: false, right_sidebar_native: true })
+        loadJsonFallback('buttontext.json', { 1: "Watch Full Video", 2: "Watch Now", 3: ["watch Now", "লিংক ডিলিট হওয়ার আগে দেখুন", "এখনো দেখে আসুন", "Watch Now"], 4: ["Join Now", "Get Bounce", "Signup"], 5: null, 6: null })
     ]);
 
     // Condition 3: Randomly pick an image from viral-video.json if available
@@ -362,38 +449,5 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // Dynamic Ads Control
-    if (adsConfig) {
-        const adMappings = [
-            { key: 'top_ad_desktop_728', selector: '.desktop-ad-container' },
-            { key: 'top_ad_tablet_468', selector: '.tablet-ad-container' },
-            { key: 'top_ad_mobile_320', selector: '.mobile-ad-container' },
-            { key: 'bottom_ad_300', selector: '.bottom-ad' },
-            { key: 'left_sidebar_160', selector: '.left-ad' },
-            { key: 'right_sidebar_native', selector: '.right-ad' }
-        ];
-
-        adMappings.forEach(ad => {
-            if (adsConfig[ad.key] === false) {
-                const el = document.querySelector(ad.selector);
-                if (el) {
-                    el.innerHTML = '';
-                    el.style.display = 'none';
-                    el.style.height = '0';
-                    el.style.padding = '0';
-                    el.style.visibility = 'hidden';
-                }
-            }
-        });
-
-        // Hide full container if all 3 top-ads are disabled
-        if (adsConfig.top_ad_desktop_728 === false && adsConfig.top_ad_tablet_468 === false && adsConfig.top_ad_mobile_320 === false) {
-            const topAd = document.querySelector('.top-ad');
-            if (topAd) {
-                topAd.style.display = 'none';
-                topAd.style.height = '0';
-                topAd.style.padding = '0';
-            }
-        }
-    }
+    // Note: Ad injection has already securely completed at the beginning of the script.
 });
