@@ -17,6 +17,7 @@
     padding: 0;
     box-sizing: border-box;
     font-family: 'Hind Siliguri', sans-serif;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -239,8 +240,30 @@ body {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     border: 1px solid var(--glass-border);
-    display: block;
+    display: flex;
+    flex-direction: column;
     position: relative;
+    text-decoration: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.grid-item-title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #000; /* Solid black to match screenshot */
+    color: #fff;
+    padding: 12px 5px;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 700; /* Bolder to match screenshot */
+    z-index: 10;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+    letter-spacing: 0.3px;
 }
 .grid-item:hover {
     transform: translateY(-5px) scale(1.02);
@@ -273,7 +296,7 @@ body {
     /* Hide broken image icon/text */
     text-indent: -10000px;
     background: transparent;
-    opacity: 0.6; /* Default Lower Opacity for Grid Images */
+    opacity: 1; /* Match screenshot brightness */
 }
 
 .grid-item:hover > img {
@@ -300,7 +323,7 @@ body {
 }
 
 .grid-item > img.loaded-state {
-    opacity: 0.6 !important; /* Dimmed state for grid items only */
+    opacity: 1 !important;
 }
 
 .grid-item:hover > img.loaded-state {
@@ -336,9 +359,8 @@ body {
 }
 
 .dynamic-ratio-grid .grid-item {
-    aspect-ratio: auto;
-    height: max-content;
-    min-height: 150px;
+    aspect-ratio: 4/5; /* Match screenshot shape */
+    height: auto;
 }
 
 .dynamic-ratio-grid .grid-item img {
@@ -442,6 +464,7 @@ body {
         gap: 1rem;
     }
     .grid-block {
-        grid-template-columns: repeat(1, 1fr); /* Exactly 1 column on mobile */
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile as per screenshot */
+        gap: 0.8rem; /* Slightly tighter gap for mobile */
     }
 }
