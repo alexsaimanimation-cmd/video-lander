@@ -89,6 +89,7 @@ body {
     padding: 0 20px;
 }
 
+/* ADS STYLES - COMMENTED OUT
 .side-ad {
     width: 250px;
     flex-shrink: 0;
@@ -103,6 +104,7 @@ body {
     position: sticky;
     top: 100px;
 }
+*/
 
 .main-container {
     flex-grow: 1;
@@ -113,6 +115,7 @@ body {
     gap: 1.5rem;
 }
 
+/* ADS STYLES - COMMENTED OUT
 .ad-banner {
     width: 100%;
     background: rgba(0, 0, 0, 0.4);
@@ -126,6 +129,7 @@ body {
 }
 .top-ad { height: 90px; }
 .bottom-ad { height: 250px; }
+*/
 
 .dynamic-content-section {
     display: flex;
@@ -272,14 +276,13 @@ body {
     position: relative;
     z-index: 1;
     transition: opacity 0.4s ease;
-    /* Hide broken image icon/text */
     text-indent: -10000px;
     background: transparent;
-    opacity: 0.6; /* Default Lower Opacity for Grid Images */
+    opacity: 0.6;
 }
 
 .grid-item:hover > img {
-    opacity: 1; /* Show full image on hover */
+    opacity: 1;
 }
 
 #main-image {
@@ -288,7 +291,6 @@ body {
     object-fit: cover;
     transition: filter 0.5s ease, opacity 0.4s ease;
     display: block;
-    /* Hide broken image icon/text */
     text-indent: -10000px;
     background: transparent;
 }
@@ -302,7 +304,7 @@ body {
 }
 
 .grid-item > img.loaded-state {
-    opacity: 0.6 !important; /* Dimmed state for grid items only */
+    opacity: 0.6 !important;
 }
 
 .grid-item:hover > img.loaded-state {
@@ -316,11 +318,11 @@ body {
     transform: translate(-50%, -50%);
     width: 60px;
     height: 60px;
-    z-index: 100; /* Higher priority */
+    z-index: 100;
     pointer-events: none;
     transition: transform 0.3s ease, opacity 0.3s ease;
     filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5));
-    opacity: 1; /* More visible */
+    opacity: 1;
     background-image: url('https://dmexpertsaim.github.io/video/yt/image/play.png');
     background-size: contain;
     background-position: center;
@@ -372,7 +374,7 @@ body {
     animation: pulse 2s infinite;
 }
 
-/* --- Media Queries for Responsive Ads --- */
+/* ADS RESPONSIVE STYLES - COMMENTED OUT
 @media screen and (min-width: 769px) {
     .tablet-ad-container, .mobile-ad-container { display: none !important; }
 }
@@ -384,31 +386,36 @@ body {
 @media screen and (max-width: 480px) {
     .desktop-ad-container, .tablet-ad-container { display: none !important; }
 }
+*/
 
-/* --- Media Queries for Responsiveness --- */
+/* Media Queries for Responsiveness */
 
-/* Laptops & smaller screens (where 3 columns won't fit well) */
+/* Laptops & smaller screens */
 @media screen and (max-width: 1150px) {
     .page-wrapper {
         flex-direction: column;
         align-items: center;
         padding: 0 10px;
     }
+    /* ADS STYLES - COMMENTED OUT
     .side-ad {
         width: 100%;
         max-width: 800px;
         min-height: 250px;
         position: static;
     }
+    */
     .main-container {
         order: 1;
     }
+    /* ADS STYLES - COMMENTED OUT
     .left-ad {
-        order: 2; /* Moves below main content */
+        order: 2;
     }
     .right-ad {
-        order: 3; /* Moves below left ad */
+        order: 3;
     }
+    */
 }
 
 /* Tablet & Smaller Devices */
@@ -448,7 +455,7 @@ body {
     }
 }
 
-/* Mobile Phones (Very Small Devices) */
+/* Mobile Phones */
 @media screen and (max-width: 480px) {
     #header-title {
         font-size: 1.1rem;
@@ -460,7 +467,7 @@ body {
         gap: 1rem;
     }
     .grid-block {
-        grid-template-columns: repeat(1, 1fr); /* Exactly 1 column on mobile */
+        grid-template-columns: repeat(1, 1fr);
         justify-content: center;
     }
 }
